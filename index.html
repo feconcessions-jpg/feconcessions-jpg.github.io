@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#00b4b6">
+  <title>Fiesta Concession Locations · State Fair of Texas</title>
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="styles.css?v=20261007-photos4">
+</head>
+<body>
+  <header class="topbar" id="topbar">
+    <div class="brand-row">
+      <img class="logo" src="images/fiesta-logo.png" width="108" height="36" alt="Fiesta">
+      <div class="brand-text">
+        <div class="brand">Fiesta Concession Locations</div>
+        <div class="sub">State Fair of Texas · Fair Park</div>
+      </div>
+    </div>
+    <p class="intro">Find our 5 locations at the fair and see what each one serves, in coupons.</p>
+  </header>
+
+  <main id="map" aria-label="Map of Fiesta concession locations"></main>
+
+  <!-- Home view: hint, quick list of stands, coupon line -->
+  <section id="peek" class="peek" aria-label="Stands">
+    <div class="peek-hint">Tap a pin or a stand below to see its menu.</div>
+    <div id="chips" class="chips" role="list"></div>
+    <p class="coupon-note" id="coupon-line">Prices are in coupons (1 coupon = $1). The fair is coupon-only, so buy coupons at any coupon booth.</p>
+  </section>
+
+  <!-- Open stand: details + menu -->
+  <section id="sheet" class="sheet" aria-modal="false" role="dialog" aria-labelledby="sheet-title" hidden>
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <button id="sheet-close" class="icon-btn" aria-label="Close menu">&times;</button>
+    <div id="stand-switch" class="stand-switch" role="tablist" hidden></div>
+    <div id="sheet-body" class="sheet-body"></div>
+  </section>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="data.js?v=20261007-photos4"></script>
+  <script src="app.js?v=20261007-photos4"></script>
+</body>
+</html>
