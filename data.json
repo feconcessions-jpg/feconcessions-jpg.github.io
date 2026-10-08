@@ -680,7 +680,7 @@
                   "price": "10 coupons",
                   "kind": "coupons",
                   "pending": false,
-                  "desc": "NEW!"
+                  "desc": null
                 },
                 {
                   "name": "Dill Ranch Pickle Fries",
