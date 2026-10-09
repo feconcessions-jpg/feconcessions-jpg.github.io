@@ -548,6 +548,13 @@
                   "desc": null
                 },
                 {
+                  "name": "Crimson Cowboy",
+                  "price": "",
+                  "kind": "none",
+                  "pending": false,
+                  "desc": "Hard strawberry lemonade."
+                },
+                {
                   "name": "Watermelon Sugar High Mojito",
                   "price": "",
                   "kind": "none",
@@ -770,7 +777,7 @@
         }
       ],
       "counts": {
-        "shown": 41,
+        "shown": 42,
         "pending": 0
       }
     },
