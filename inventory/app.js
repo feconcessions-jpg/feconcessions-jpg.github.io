@@ -16,7 +16,7 @@ function api(action,data){
   if(DEMO) return Promise.resolve(demo(action,data||{}));
   return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
     body:JSON.stringify({action:action,pin:LS.get('pin',''),data:data||{}})})
-    .then(function(r){return r.json()}).then(function(j){if(!j.ok){if(j.error==='bad_pin'){LS.set('pin','');askPin()}throw new Error(j.error||'error')}return j.result});
+    .then(function(r){return r.json()}).then(function(j){if(!j.ok){if(j.error==='bad_pin'){LS.set('pin','');askPin('Wrong PIN. Try again.')}throw new Error(j.error||'error')}return j.result});
 }
 function demo(a,d){
   var o=LS.get('orders',[]);
@@ -35,7 +35,7 @@ function demo(a,d){
   if(a==='markInvoiceReceived'){var g=o.filter(function(x){return x.id===d.id})[0];if(!g||!g.sb_invoice_expected)throw new Error('no_sb_invoice_expected');g.sb_invoice_received=true;g.sb_invoice_number=d.invoice_number||'';g.sb_invoice_received_at=new Date().toISOString();LS.set('orders',o);return{id:d.id}}
   throw new Error('unknown action');
 }
-function askPin(){$('pinbox').hidden=false}
+function askPin(m){var e=$('pinerr');if(!e){e=document.createElement('p');e.id='pinerr';e.className='alert';$('pinbox').insertBefore(e,$('pinbox').firstChild)}e.textContent=m||'';e.hidden=!m;$('pin').value='';$('pinbox').hidden=false}
 $('pinok').onclick=function(){LS.set('pin',$('pin').value.trim());$('pinbox').hidden=true;refresh()};
 
 // ---------- tabs ----------
