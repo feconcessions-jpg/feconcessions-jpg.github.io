@@ -1,7 +1,7 @@
 // Fiesta Inventory config. Paste Justin's Apps Script Web app URL (ends in /exec) below.
 // Leave it empty to run in DEMO mode (saves only on this phone, not to the Sheet).
 window.FIESTA_CONFIG = {
-  API_URL: "",
+  API_URL: "https://script.google.com/macros/s/AKfycbz1tZyVzfb269a85IBMMf_MNWBUBtp63hePdWYfk3sslpXxXW0H--CAniDP0AVWsZHY7g/exec",
   // From Ethan's /workspace/inventory/locations_customers.md (Oct 13, 2026). Edit freely.
   SHIP_VIA_DEFAULT: "SB Delivery",
   CUSTOMERS: [
