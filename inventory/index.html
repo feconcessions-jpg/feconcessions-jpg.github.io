@@ -1,0 +1,68 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#00b4b6"><title>Fiesta Inventory</title>
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png"><link rel="stylesheet" href="style.css"></head><body>
+<header><img src="logo.png" alt="Fiesta" class="logo"><h1>Fiesta Inventory</h1></header>
+<div id="demo" class="banner" hidden>Demo mode: counts and orders are saved on this phone only until the app is connected to the Sheet</div>
+<div id="pinbox" class="card" hidden><label>Staff PIN<input id="pin" type="password" inputmode="numeric"></label><button class="btn teal" id="pinok">Enter</button></div>
+<main>
+<section id="tab-count" class="tab">
+  <div class="card row"><label>Counter <select id="counter"></select></label><button class="btn small" id="addname">+ Name</button></div>
+  <div class="seg wh" id="whsw"><button data-w="W1" class="on">Warehouse 1</button><button data-w="W2">Warehouse 2</button></div><p class="muted" id="whsrc"></p>
+  <p class="muted" id="lastsaved">Not saved yet</p>
+  <div id="groups"></div>
+  <h2 id="guideh">Order guide</h2><div id="guide" class="card"></div>
+  <button class="btn red big sticky" id="savecount">Save count</button>
+</section>
+<section id="tab-new" class="tab" hidden>
+  <div class="card"><label>From warehouse<select id="srcwh"><option value="W1">Warehouse 1</option><option value="W2">Warehouse 2</option></select></label>
+  <label>Customer / stand<select id="dest"></select></label>
+  <input id="destother" placeholder="Type customer or stand" hidden>
+  <div id="destalert" class="alert" hidden></div>
+  <label>Ship to (address)<input id="shipto"></label>
+  <label>Drop spot (Map Plat / stand code)<input id="drop"></label>
+  <label>Delivery date<input type="date" id="ddate"></label></div>
+  <details class="slip"><summary>Packing slip fields</summary><div class="card" style="margin:0;border:0">
+  <label>Slip #<input id="slipno" placeholder="e.g. IF13435"></label>
+  <label>Slip date<input type="date" id="slipdate"></label>
+  <label>Ship via<input id="shipvia"></label>
+  <label>PO #<input id="pono"></label>
+  <label>Tax #<input id="taxno"></label>
+  <label>Permit #<input id="permitno"></label></div></details>
+  <div class="card"><label>Find product<input id="search" type="search" placeholder="Search products"></label>
+  <div id="results"></div></div>
+  <h2>Items in this order</h2><div id="lines" class="card"><p class="muted">No items yet</p></div>
+  <div class="card"><label>Delivery note (optional)<textarea id="onote" rows="2" placeholder="e.g. Deliver to MLK 6F"></textarea></label></div>
+  <button class="btn red big" id="saveorder">Save order</button>
+</section>
+<section id="tab-orders" class="tab" hidden>
+  <div class="seg" id="filter"><button data-f="open" class="on">Open</button><button data-f="loaded">Loaded</button><button data-f="delivered">Delivered</button><button data-f="all">All</button><button data-f="sbpending">SB invoice pending</button></div>
+  <div id="orders"></div>
+</section>
+<section id="tab-recv" class="tab" hidden>
+  <div class="seg" id="rsw"><button data-r="recv" class="on">Receive from SB</button><button data-r="bal">W2 balance</button></div>
+  <div id="recvpane">
+  <div id="rcvexp"></div>
+  <p class="muted">Specialty Blends delivery <b>into Warehouse 2</b>. Tap + for each product received.</p>
+  <div class="card"><label>Received by<input id="rcvwho" autocomplete="off"></label>
+  <label>Received date/time<input type="datetime-local" id="rcvwhen"></label>
+  <label>SB delivery / invoice # (optional)<input id="rcvref" placeholder="e.g. IF13500 or INV91600"></label></div>
+  <div id="rcvitems" class="card"></div>
+  <div class="card"><label>Note (optional)<textarea id="rcvnote" rows="2"></textarea></label></div>
+  <button class="btn red big" id="saverecv">Save delivery received</button>
+  <h2>Received so far</h2><div id="rcvlist"></div></div>
+  <div id="balpane" hidden>
+  <div class="alert" style="background:#fff7d6;border-color:#b38f00">Only knows what's logged in this app: SB deliveries received here, minus orders pulled from Warehouse 2 (incl. Justin's prior-pulls entry). Not a physical count. Use it to check SB invoices.</div>
+  <div id="bal"></div></div>
+</section>
+</main>
+<div id="sheet" hidden><div class="card sheetbox"><h2 style="margin:0 0 6px">Delivered: <span id="shdest"></span></h2>
+<label>Received by (name)<input id="rcvby" autocomplete="off"></label>
+<label>Received time<input type="datetime-local" id="rcvat"></label>
+<label>Signature (sign with finger)</label><canvas id="sig" width="340" height="170"></canvas>
+<div class="row"><button class="btn small" id="sigclear">Clear</button><button class="btn small" id="shcancel">Cancel</button><button class="btn green" id="shsave" style="flex:1">Save delivered</button></div></div></div>
+<div id="toast" hidden></div>
+<nav><button data-tab="count" class="on">Count</button><button data-tab="new">New order</button><button data-tab="orders">Orders</button><button data-tab="recv">Receive</button></nav>
+<script src="config.js"></script><script src="app.js"></script></body></html>
