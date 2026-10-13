@@ -16,7 +16,9 @@ window.FIESTA_CONFIG = {
     {name:"Fiesta stand - Footlong", ship_to:"", drop:""},
     {name:"Fiesta stand - Limonata", ship_to:"", drop:""},
     {name:"Fiesta stand - Boba Rita", ship_to:"", drop:""},
+    {name:"Fiesta Trailer", ship_to:"", drop:"Fiesta Trailer"},
+    {name:"Trio Beverage", ship_to:"", drop:"Trio Beverage"},
     {name:"Fiesta warehouse (pickup)", ship_to:"928 S Haskell Ave, Dallas TX 75223", drop:"Warehouse"}
   ],
-  COUNTER_NAMES: ["Mac"]
+  COUNTER_NAMES: ["Mac","Tito","David","Rodolfo"]
 };

@@ -55,3 +55,8 @@ nav button{font-size:16px}
 .badge.prior{background:#555}.badge.confirm{background:#e0a800;color:#000}
 table.bal{width:100%;border-collapse:collapse;font-size:15px}table.bal th,table.bal td{border-bottom:1px solid #ddd;padding:6px 3px;text-align:right}table.bal th:first-child,table.bal td:first-child{text-align:left}
 table.bal td.neg{color:var(--red);font-weight:800}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.grid2 button{font-size:20px;font-weight:800;min-height:60px;padding:10px;border:2px solid var(--teal);background:#fff;border-radius:12px;color:#000}
+.grid2 button.on{background:var(--teal);color:#fff}
+[hidden]{display:none!important}
