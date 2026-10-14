@@ -1,0 +1,27 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#00b4b6">
+<title>Fiesta P&amp;L</title><link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" href="icon-192.png"><link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="style.css?v=20261014b"></head><body>
+<header><img src="logo.png" alt="Fiesta" class="logo"><h1>Fiesta P&amp;L</h1><span id="asof" class="asof"></span><button id="lock" class="btn small" hidden title="Lock / sign out">🔒 Lock</button></header>
+<p id="loading" class="muted" hidden style="text-align:center;margin:30px">Loading P&amp;L…</p>
+<div id="pinbox" class="card" hidden><label>P&amp;L PIN<input id="pin" type="password" inputmode="numeric" autocomplete="off"></label><button class="btn teal" id="pinok">Open</button><p id="pinerr" class="muted"></p></div>
+<main id="app" hidden>
+ <div class="chips" id="units"></div>
+ <div class="card ctl">
+  <div class="row"><label>Year<select id="year"></select></label><label>Compare to<select id="cmp"></select></label></div>
+  <div class="seg" id="ptype">
+   <button data-p="year">Year</button><button data-p="day">Day</button><button data-p="week">Fair week</button><button data-p="wk">Wknd/Wkday</button><button data-p="custom">Custom</button></div>
+  <div id="pextra" class="row"></div>
+  <label class="tog"><input type="checkbox" id="alloc"> Allocate shared costs by share of net sales <span class="tag">PROPOSAL - not decided by Justin</span></label>
+ </div>
+ <p class="muted" id="plabel"></p>
+ <div class="kpis" id="kpis"></div>
+ <h2>P&amp;L</h2><div class="card" id="pnl"></div>
+ <h2>Compare by fair day</h2><div class="card" id="yoy"></div>
+ <h2>All years, same fair days</h2><div class="card" id="years"></div>
+ <h2>By location</h2><div class="card" id="byunit"></div>
+ <h2>Daily detail <span class="hint">tap a day</span></h2><div class="card" id="daily"></div>
+</main>
+<div id="sheet" class="sheet" hidden><div class="sheetin"><button class="btn small close" id="close">Close</button><div id="sheetbody"></div></div></div>
+<script src="config.js?v=20261014b"></script><script src="app.js?v=20261014b"></script></body></html>
