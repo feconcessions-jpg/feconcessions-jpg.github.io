@@ -11,6 +11,8 @@ function today(){var d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffse
 function linkHtml(u){return u?'<a href="'+esc(u)+'" target="_blank" rel="noopener">Reorder link ↗</a>':''}
 function uomOf(i){return i&&String(i.uom).toLowerCase()==='unit'?'unit':'case'}  // no uom (old orders) = case
 function qtyU(q,u){q=+q||0;return u==='unit'?q+(q===1?' unit':' units'):q+' cs'}
+var uomPref=LS.get('cuom',{});  // Count tab: Case/Unit remembered per item (default Case)
+function cuom(id,w){return (w||wh)!=='W2'&&uomPref[id]==='unit'?'unit':'case'}  // W2 = cases only
 function packHint(p){var u=(p&&p.unit)||'';return u&&!/UNCERTAIN/i.test(u)?u:''}  // shown as a hint only, never used to convert
 function telHtml(p){return p?'<a href="tel:'+esc(p.replace(/\D/g,''))+'">📞 '+esc(p)+'</a>':''}
 
@@ -25,7 +27,8 @@ function demo(a,d){
   var o=LS.get('orders',[]);
   if(a==='state'){var ch=false;SEEDS.forEach(function(s){if(!o.some(function(x){return x.id===s.id})){o.push(JSON.parse(JSON.stringify(s)));ch=true}});if(ch)LS.set('orders',o);
     var rs0=LS.get('receipts',null);if(!rs0){rs0=JSON.parse(JSON.stringify(EXPECTED));LS.set('receipts',rs0)}
-    var lat={};LS.get('countRows',[]).forEach(function(r){if(r.on_hand===''||r.on_hand==null)return;if(!lat[r.product_id]||r.timestamp>=lat[r.product_id].timestamp)lat[r.product_id]={on_hand:r.on_hand,timestamp:r.timestamp,counter:r.counter}});
+    var lat={};LS.get('countRows',[]).forEach(function(r){if(r.on_hand===''||r.on_hand==null)return;if(!lat[r.product_id]||r.timestamp>=lat[r.product_id].timestamp)lat[r.product_id]={on_hand:r.on_hand,timestamp:r.timestamp,counter:r.counter,order:r.order,order_uom:r.warehouse==='W2'?'case':uomOf({uom:r.order_uom})}});
+    LS.get('countRows',[]).forEach(function(r){if(r.order===''||r.order==null)return;var k=r.product_id,c=lat[k]=lat[k]||{on_hand:'',timestamp:r.timestamp,counter:r.counter};if(!c.last_order_at||r.timestamp>=c.last_order_at){c.last_order=r.order;c.last_order_uom=r.warehouse==='W2'?'case':uomOf({uom:r.order_uom});c.last_order_at=r.timestamp}});
     return{orders:o,lastCounts:LS.get('lastCounts',{}),receipts:rs0,latestCounts:lat}}
   if(a==='saveReceipt'){var its=(d.items||[]).filter(function(i){return i.product_id&&i.qty>0});if(!its.length)throw new Error('no_items');if(!d.received_by)throw new Error('need_received_by');
     var rc={id:'RCV-'+Date.now().toString(36).toUpperCase(),warehouse:'W2',supplier:'Specialty Blends',items:its,items_summary:its.map(function(i){return i.qty+' x '+i.name}).join('; '),ref_number:d.ref_number||'',received_by:d.received_by,received_at:d.received_at||new Date().toISOString(),note:d.note||'',created_at:new Date().toISOString(),status:'received',expected_id:d.expected_id||''};
@@ -53,7 +56,18 @@ function stepper(id,kind,val){
   return '<div class="field '+kind+'"><span>'+(kind==='hand'?'On Hand':'Order')+'</span><div class="step">'+
    '<button type="button" aria-label="minus" data-id="'+id+'" data-k="'+kind+'" data-d="-1">−</button>'+
    '<input inputmode="numeric" pattern="[0-9]*" data-id="'+id+'" data-k="'+kind+'" value="'+(val===''||val==null?'':val)+'" aria-label="'+kind+'">'+
-   '<button type="button" class="plus" aria-label="plus" data-id="'+id+'" data-k="'+kind+'" data-d="1">+</button></div></div>';
+   '<button type="button" class="plus" aria-label="plus" data-id="'+id+'" data-k="'+kind+'" data-d="1">+</button></div>'+(kind==='order'?uomCtl(id):'')+'</div>';
+}
+function uomCtl(id){if(wh==='W2')return '<div class="cuom fixed" title="Warehouse 2: cases only">cs</div>';var u=cuom(id);
+  return '<div class="seg cuom" role="group" aria-label="Order in case or unit"><button type="button" data-cuom="case" data-id="'+id+'" class="'+(u==='case'?'on':'')+'">Case</button><button type="button" data-cuom="unit" data-id="'+id+'" class="'+(u==='unit'?'on':'')+'">Unit</button></div>';
+}
+function lastHtml(id){var c=latestCounts[id];if(!c)return '';var a=[];
+  if(c.on_hand!==''&&c.on_hand!=null)a.push(esc(c.on_hand)+' on hand');
+  var oq=c.last_order!=null&&c.last_order!==''?c.last_order:(c.order!=null&&c.order!==''?c.order:null),ou=c.last_order!=null&&c.last_order!==''?c.last_order_uom:c.order_uom;
+  if(oq!==null&&+oq>0)a.push('order '+qtyU(oq,wh==='W2'?'case':uomOf({uom:ou})));
+  return a.length?'Last count: '+a.join(' · ')+(c.timestamp?' ('+esc(fmt(c.timestamp))+')':''):'';
+}
+function renderLastCounts(){document.querySelectorAll('#groups .lastc').forEach(function(el){el.innerHTML=lastHtml(el.dataset.id)})
 }
 function renderGroups(){
   var open=LS.get('open',{});
@@ -63,19 +77,21 @@ function renderGroups(){
       ((g.note||g.phone)?'<div class="gnote">'+(g.phone?telHtml(g.phone):esc(g.note))+'</div>':'')+
       items.map(function(p){var v=draft[p.id]||{};return '<div class="item"><div class="iname">'+esc(p.name)+'</div>'+
         (p.unit?'<div class="unit">Unit: '+esc(p.unit)+'</div>':'')+(p.note?'<div class="inote">'+esc(p.note)+'</div>':'')+(p.catalog_note?'<div class="inote">'+esc(p.catalog_note)+'</div>':'')+(p.last_known?'<div class="lastk">last known (Oct 12): '+esc(p.last_known)+'</div>':'')+(p.link?'<div>'+linkHtml(p.link)+'</div>':'')+
-        '<div class="fields">'+stepper(p.id,'hand',v.hand)+stepper(p.id,'order',v.order)+'</div></div>'}).join('')+'</details>';
+        '<div class="fields">'+stepper(p.id,'hand',v.hand)+stepper(p.id,'order',v.order)+'</div><div class="lastc" data-id="'+esc(p.id)+'">'+lastHtml(p.id)+'</div></div>'}).join('')+'</details>';
   }).join('');
   document.querySelectorAll('details').forEach(function(d){d.addEventListener('toggle',function(){var o=LS.get('open',{});o[d.dataset.g]=d.open;LS.set('open',o)})});
 }
 function setVal(id,k,v){draft[id]=draft[id]||{};draft[id][k]=v;LS.set('draft',draft);renderGuide()}
-$('groups').addEventListener('click',function(e){var b=e.target.closest('button[data-d]');if(!b)return;
+$('groups').addEventListener('click',function(e){var ub=e.target.closest('button[data-cuom]');if(ub){if(wh==='W2')return;uomPref[ub.dataset.id]=ub.dataset.cuom;LS.set('cuom',uomPref);
+    ub.parentNode.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===ub)});renderGuide();return}
+  var b=e.target.closest('button[data-d]');if(!b)return;
   var inp=b.parentNode.querySelector('input'),n=Math.max(0,(parseInt(inp.value,10)||0)+parseInt(b.dataset.d,10));inp.value=n;setVal(b.dataset.id,b.dataset.k,n)});
 $('groups').addEventListener('input',function(e){var i=e.target;if(i.tagName!=='INPUT')return;i.value=i.value.replace(/\D/g,'');setVal(i.dataset.id,i.dataset.k,i.value===''?'':parseInt(i.value,10))});
 function renderGuide(){
   $('guideh').textContent='Order guide - '+whName(wh);
   var html=GROUPS.filter(function(g){return g.warehouse===wh}).map(function(g){var its=PRODUCTS.filter(function(p){return p.warehouse===wh&&p.countable&&p.group===g.name&&(draft[p.id]||{}).order>0});
     if(!its.length)return'';return '<div class="gg"><b>'+esc(g.name)+'</b>'+(g.phone?' · '+telHtml(g.phone):g.note?' · '+esc(g.note):'')+
-      '<ul>'+its.map(function(p){return '<li><b>'+draft[p.id].order+'</b> × '+esc(p.name)+(p.note?' <i>('+esc(p.note)+')</i>':'')+(p.link?' '+linkHtml(p.link):'')+'</li>'}).join('')+'</ul></div>'}).join('');
+      '<ul>'+its.map(function(p){return '<li><b>'+qtyU(draft[p.id].order,cuom(p.id))+'</b> × '+esc(p.name)+(p.note?' <i>('+esc(p.note)+')</i>':'')+(p.link?' '+linkHtml(p.link):'')+'</li>'}).join('')+'</ul></div>'}).join('');
   $('guide').innerHTML=html||'<p class="muted">Nothing to order yet. Use the Order field on any item.</p>';
 }
 function allNames(){var ns=(C.COUNTER_NAMES||['Mac']).slice();LS.get('names',[]).forEach(function(n){if(ns.indexOf(n)<0)ns.push(n)});return ns}
@@ -90,11 +106,11 @@ function showLast(){var lc=lastByWh[wh];$('lastsaved').textContent=lc?whName(wh)
 function renderWh(){if(!WH.some(function(x){return x.id===wh}))wh='W1';$('whsw').innerHTML=WH.map(function(x){return '<button type="button" data-w="'+x.id+'">'+esc(x.name)+'</button>'}).join('');$('whsw').querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.w===wh)});var x=WH.filter(function(a){return a.id===wh})[0];$('whsrc').textContent=x?x.source:'';renderGroups();renderGuide();showLast()}
 $('whsw').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;wh=b.dataset.w;LS.set('wh',wh);renderWh()});
 $('savecount').onclick=function(){
-  var rows=PRODUCTS.filter(function(p){return p.warehouse===wh&&p.countable}).map(function(p){var v=draft[p.id]||{};return{product_id:p.id,name:p.name,group:p.group,on_hand:v.hand===undefined?'':v.hand,order:v.order===undefined?'':v.order}})
+  var rows=PRODUCTS.filter(function(p){return p.warehouse===wh&&p.countable}).map(function(p){var v=draft[p.id]||{};return{product_id:p.id,name:p.name,group:p.group,on_hand:v.hand===undefined?'':v.hand,order:v.order===undefined?'':v.order,order_uom:cuom(p.id)}})
     .filter(function(r){return r.on_hand!==''||r.order!==''});
   if(!rows.length){toast('Enter at least one count first');return}
   var b=this;b.disabled=true;
-  api('saveCount',{counter:$('counter').value,warehouse:wh,rows:rows}).then(function(lc){lastByWh[wh]=lc;showLast();toast('Count saved ✓')}).catch(function(e){toast('Save failed: '+e.message)}).then(function(){b.disabled=false});
+  api('saveCount',{counter:$('counter').value,warehouse:wh,rows:rows}).then(function(lc){lastByWh[wh]=lc;showLast();toast('Count saved ✓');refresh()}).catch(function(e){toast('Save failed: '+e.message)}).then(function(){b.disabled=false});
 };
 
 // ---------- new order ----------
@@ -166,7 +182,7 @@ $('shsave').onclick=function(){var n=$('rcvby').value.trim();if(!n){toast('Enter
   var b=this;b.disabled=true;api('markDelivered',{id:sheetId,received_by:n,signature:sigData(),received_at:new Date($('rcvat').value).toISOString(),by:$('counter').value})
    .then(function(){$('sheet').hidden=true;toast('Delivered ✓');return refresh()}).catch(function(e){toast('Failed: '+e.message)}).then(function(){b.disabled=false})};
 
-function refresh(){return api('state').then(function(s){orders=s.orders||[];lastByWh=s.lastCounts||{};receipts=s.receipts||[];latestCounts=s.latestCounts||{};showLast();renderOrders();renderRcvList();renderBal()}).catch(function(e){toast('Could not load: '+e.message)})}
+function refresh(){return api('state').then(function(s){orders=s.orders||[];lastByWh=s.lastCounts||{};receipts=s.receipts||[];latestCounts=s.latestCounts||{};showLast();renderLastCounts();renderOrders();renderRcvList();renderBal()}).catch(function(e){toast('Could not load: '+e.message)})}
 
 // ---------- receive from Specialty Blends (into W2) ----------
 function w2prods(){return PRODUCTS.filter(function(p){return p.warehouse==='W2'&&p.countable})}
