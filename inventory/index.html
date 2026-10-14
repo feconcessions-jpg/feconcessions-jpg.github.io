@@ -17,7 +17,7 @@
   <button class="btn red big sticky" id="savecount">Save count</button>
 </section>
 <section id="tab-new" class="tab" hidden>
-  <div class="card"><label>From warehouse<select id="srcwh"><option value="W1">Warehouse 1</option><option value="W2">Warehouse 2</option></select></label>
+  <div class="card"><label>From warehouse<select id="srcwh"><option value="W1">Warehouse 1</option><option value="W2">Warehouse 2</option><option value="TRL">Fiesta Trailer</option><option value="TRB">Trio Beverage</option></select></label>
   <label>Customer / stand<select id="dest"></select></label>
   <input id="destother" placeholder="Type customer or stand" hidden>
   <div id="destalert" class="alert" hidden></div>
@@ -58,7 +58,7 @@
   <div id="bal"></div></div>
 </section>
 </main>
-<div id="sheet" hidden><div class="card sheetbox"><h2 style="margin:0 0 6px">Delivered: <span id="shdest"></span></h2>
+<div id="sheet" hidden><div class="card sheetbox"><h2 style="margin:0 0 6px">Delivered: <span id="shdest"></span></h2><ul id="shitems" class="shitems"></ul>
 <label>Received by (name)<input id="rcvby" autocomplete="off"></label>
 <label>Received time<input type="datetime-local" id="rcvat"></label>
 <label>Signature (sign with finger)</label><canvas id="sig" width="340" height="170"></canvas>
