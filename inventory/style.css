@@ -60,3 +60,6 @@ table.bal td.neg{color:var(--red);font-weight:800}
 .grid2 button{font-size:20px;font-weight:800;min-height:60px;padding:10px;border:2px solid var(--teal);background:#fff;border-radius:12px;color:#000}
 .grid2 button.on{background:var(--teal);color:#fff}
 [hidden]{display:none!important}
+
+.seg.uom{margin:8px 0 4px}.seg.uom button{font-size:20px;padding:14px;min-height:52px}
+.packhint{color:#555}.shitems{margin:0 0 8px;padding-left:20px}

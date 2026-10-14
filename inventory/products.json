@@ -2783,6 +2783,7 @@
      "qty": 39,
      "back_ordered": 0,
      "shipped": 39,
+     "uom": "case",
      "needs_confirm": false,
      "mapping_note": "only 4L Barajas product in W2 guide"
     },
@@ -2795,6 +2796,7 @@
      "qty": 31,
      "back_ordered": 0,
      "shipped": 31,
+     "uom": "case",
      "needs_confirm": false,
      "mapping_note": "= 4L SB 16% (per Ethan)"
     },
@@ -2807,6 +2809,7 @@
      "qty": 5,
      "back_ordered": 0,
      "shipped": 5,
+     "uom": "case",
      "needs_confirm": false,
      "mapping_note": "= Old Hays Reserve 17% 1L (Justin confirmed)"
     },
@@ -2819,6 +2822,7 @@
      "qty": 1,
      "back_ordered": 0,
      "shipped": 1,
+     "uom": "case",
      "needs_confirm": false,
      "mapping_note": "only 4L margarita product in W2 guide"
     }
@@ -2852,7 +2856,8 @@
      "unit": "cs of 4L",
      "qty": 1,
      "back_ordered": 0,
-     "shipped": 1
+     "shipped": 1,
+     "uom": "case"
     },
     {
      "product_id": "w2-4l-gelatin-shots-sour-apple",
@@ -2861,7 +2866,8 @@
      "unit": "cs of 4L",
      "qty": 1,
      "back_ordered": 0,
-     "shipped": 1
+     "shipped": 1,
+     "uom": "case"
     }
    ],
    "note": "Seeded from deliveries log 10/13 (log status: with Magnolia run)"
@@ -2894,7 +2900,8 @@
      "unit": "cs of 4L",
      "qty": 1,
      "back_ordered": 0,
-     "shipped": 1
+     "shipped": 1,
+     "uom": "case"
     },
     {
      "product_id": "w2-4l-watermelon-rtd-14",
@@ -2903,7 +2910,8 @@
      "unit": "cs of 4L",
      "qty": 1,
      "back_ordered": 0,
-     "shipped": 1
+     "shipped": 1,
+     "uom": "case"
     },
     {
      "product_id": "w2-4l-sour-apple-rtd-14",
@@ -2912,7 +2920,8 @@
      "unit": "cs of 4L",
      "qty": 1,
      "back_ordered": 0,
-     "shipped": 1
+     "shipped": 1,
+     "uom": "case"
     }
    ],
    "note": "Seeded from deliveries log 10/13 (log status: with Magnolia run)"
@@ -2945,7 +2954,8 @@
      "unit": "cs of 4L",
      "qty": 5,
      "back_ordered": 0,
-     "shipped": 5
+     "shipped": 5,
+     "uom": "case"
     }
    ],
    "note": "Seeded from deliveries log 10/13 (log status: morning)"
@@ -2976,9 +2986,10 @@
      "name": "19L SB 16% BIB",
      "group": "Specialty Blends",
      "unit": "cs = 1 x 19L BIB",
-     "qty": 50,
+     "qty": 80,
      "back_ordered": 0,
-     "shipped": 50
+     "shipped": 80,
+     "uom": "case"
     }
    ],
    "note": "Seeded from deliveries log 10/13 (log status: delivered); no signature captured in app"
@@ -3007,7 +3018,8 @@
      "unit": "cs of 4L",
      "qty": 4,
      "back_ordered": 0,
-     "shipped": 4
+     "shipped": 4,
+     "uom": "case"
     },
     {
      "product_id": "w2-4l-barajas-17",
@@ -3016,7 +3028,8 @@
      "unit": "cs of 4L",
      "qty": 3,
      "back_ordered": 0,
-     "shipped": 3
+     "shipped": 3,
+     "uom": "case"
     },
     {
      "product_id": "w2-1l-barajas-17",
@@ -3025,7 +3038,8 @@
      "unit": "cs of 1L",
      "qty": 5,
      "back_ordered": 0,
-     "shipped": 5
+     "shipped": 5,
+     "uom": "case"
     }
    ],
    "note": "ON HOLD until Wed."
