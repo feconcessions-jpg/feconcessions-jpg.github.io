@@ -13,6 +13,17 @@ function uomOf(i){return i&&String(i.uom).toLowerCase()==='unit'?'unit':'case'} 
 function qtyU(q,u){q=+q||0;return u==='unit'?q+(q===1?' unit':' units'):q+' cs'}
 var uomPref=LS.get('cuom',{});  // Count tab: Case/Unit remembered per item (default Case)
 function cuom(id,w){return (w||wh)!=='W2'&&uomPref[id]==='unit'?'unit':'case'}  // W2 = cases only
+// Merged product ids (old id -> kept id). Old Sheet rows keep the old id; we map them when reading.
+var ALIAS={'w2-sb-dos-locos-small-box':'w2-50ml-dos-locos-17'};
+function aid(id){return ALIAS[id]||id}
+function remapItems(list){(list||[]).forEach(function(x){(x.items||[]).forEach(function(i){if(ALIAS[i.product_id]){i.alias_of=i.product_id;i.product_id=aid(i.product_id)}})});return list}
+// Same session (same timestamp): keep the non-zero value, never add. Otherwise keep the most recent.
+function pickC(a,b){if(!a)return b;if(!b)return a;var ta=String(a.timestamp||''),tb=String(b.timestamp||'');
+  if(ta===tb){var r=Object.assign({},a);if(!(+a.on_hand>0)&&+b.on_hand>0)r.on_hand=b.on_hand;
+    if((a.last_order==null||a.last_order===''||!(+a.last_order>0))&&b.last_order!=null&&+b.last_order>0){r.last_order=b.last_order;r.last_order_uom=b.last_order_uom;r.last_order_at=b.last_order_at}
+    if(!(+a.order>0)&&+b.order>0){r.order=b.order;r.order_uom=b.order_uom}return r}
+  return tb>ta?b:a}
+function mergeLatest(lc){var o={};Object.keys(lc||{}).forEach(function(k){var t=aid(k);o[t]=pickC(o[t],lc[k])});return o}
 function packHint(p){var u=(p&&p.unit)||'';return u&&!/UNCERTAIN/i.test(u)?u:''}  // shown as a hint only, never used to convert
 function telHtml(p){return p?'<a href="tel:'+esc(p.replace(/\D/g,''))+'">📞 '+esc(p)+'</a>':''}
 
@@ -159,7 +170,7 @@ function renderOrders(){var list=orders.filter(function(o){return filter==='all'
     (o.labels_checked?'<div class="inote">✓ Labels checked '+esc(fmt(o.labels_checked_at))+'</div>':'')+
     (st==='open'?'<label class="lbl"><input type="checkbox" data-chk="'+esc(o.id)+'"> Case labels checked against slip before load leaves</label><button class="btn teal big" data-load="'+esc(o.id)+'" disabled>Mark loaded / out for delivery</button>':'')+
     (st==='loaded'?'<button class="btn green big" data-deliver="'+esc(o.id)+'">Mark delivered</button>':'')+
-    (st==='delivered'?'<div><b>Received by:</b> '+esc(o.received_by)+' · '+esc(fmt(o.received_at))+'</div>'+(o.signature?'<img class="sigimg" alt="signature" src="'+esc(o.signature)+'">':''):'')+'</div>'}).join(''):'<p class="muted">No '+(filter==='all'?'':filter==='sbpending'?'SB-invoice-pending ':filter+' ')+'orders.</p>'}
+    (st==='delivered'?'<div><b>Received by:</b> '+esc(o.received_by)+' · '+esc(fmt(o.received_at))+'</div>'+(o.signature?(/^data:image\//.test(o.signature)?'<img class="sigimg" alt="signature" src="'+esc(o.signature)+'">':'<div class="inote">Signature: '+esc(o.signature)+'</div>'):''):'')+'</div>'}).join(''):'<p class="muted">No '+(filter==='all'?'':filter==='sbpending'?'SB-invoice-pending ':filter+' ')+'orders.</p>'}
 $('orders').addEventListener('change',function(e){var c=e.target.closest('[data-chk]');if(!c)return;var b=$('orders').querySelector('[data-load="'+c.dataset.chk+'"]');if(b)b.disabled=!c.checked});
 $('orders').addEventListener('click',function(e){
   var b=e.target.closest('[data-load]');if(b){var c=$('orders').querySelector('[data-chk="'+b.dataset.load+'"]');if(!c||!c.checked){toast('Check the case labels first');return}
@@ -182,7 +193,7 @@ $('shsave').onclick=function(){var n=$('rcvby').value.trim();if(!n){toast('Enter
   var b=this;b.disabled=true;api('markDelivered',{id:sheetId,received_by:n,signature:sigData(),received_at:new Date($('rcvat').value).toISOString(),by:$('counter').value})
    .then(function(){$('sheet').hidden=true;toast('Delivered ✓');return refresh()}).catch(function(e){toast('Failed: '+e.message)}).then(function(){b.disabled=false})};
 
-function refresh(){return api('state').then(function(s){orders=s.orders||[];lastByWh=s.lastCounts||{};receipts=s.receipts||[];latestCounts=s.latestCounts||{};showLast();renderLastCounts();renderOrders();renderRcvList();renderBal()}).catch(function(e){toast('Could not load: '+e.message)})}
+function refresh(){return api('state').then(function(s){orders=s.orders||[];lastByWh=s.lastCounts||{};receipts=s.receipts||[];latestCounts=mergeLatest(s.latestCounts);remapItems(orders);remapItems(receipts);showLast();renderLastCounts();renderOrders();renderRcvList();renderBal()}).catch(function(e){toast('Could not load: '+e.message)})}
 
 // ---------- receive from Specialty Blends (into W2) ----------
 function w2prods(){return PRODUCTS.filter(function(p){return p.warehouse==='W2'&&p.countable})}
@@ -212,7 +223,7 @@ function renderBal(){var rin={},out={},opn={},unk=[],unconf={};
 
 // ---------- boot ----------
 $('demo').hidden=!DEMO;$('ddate').value=today();
-fetch('products.json').then(function(r){return r.json()}).then(function(j){GROUPS=j.groups;PRODUCTS=j.products;WH=j.warehouses;SEEDS=j.seed_orders||[];EXPECTED=j.expected_receipts||[];PRODUCTS.forEach(function(p){BYID[p.id]=p});
+fetch('products.json?v=20261014d').then(function(r){return r.json()}).then(function(j){GROUPS=j.groups;PRODUCTS=j.products;WH=j.warehouses;SEEDS=j.seed_orders||[];EXPECTED=j.expected_receipts||[];PRODUCTS.forEach(function(p){BYID[p.id]=p});
   renderCounters();renderWh();renderDest();renderLines();
   if(!DEMO&&!LS.get('pin',''))askPin();else refresh();
 }).catch(function(e){toast('Could not load products: '+e.message)});
