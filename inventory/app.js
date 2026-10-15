@@ -116,12 +116,14 @@ function whName(w){var x=WH.filter(function(a){return a.id===w})[0];return x?x.n
 function showLast(){var lc=lastByWh[wh];$('lastsaved').textContent=lc?whName(wh)+' last saved '+fmt(lc.timestamp)+' by '+lc.counter:whName(wh)+': not saved yet'}
 function renderWh(){if(!WH.some(function(x){return x.id===wh}))wh='W1';$('whsw').innerHTML=WH.map(function(x){return '<button type="button" data-w="'+x.id+'">'+esc(x.name)+'</button>'}).join('');$('whsw').querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.w===wh)});var x=WH.filter(function(a){return a.id===wh})[0];$('whsrc').textContent=x?x.source:'';renderGroups();renderGuide();showLast()}
 $('whsw').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;wh=b.dataset.w;LS.set('wh',wh);renderWh()});
+// after a confirmed save: wipe that location's draft qtys + Case/Unit picks (back to Case)
+function clearWh(w){PRODUCTS.forEach(function(p){if(p.warehouse===w){delete draft[p.id];delete uomPref[p.id]}});LS.set('draft',draft);LS.set('cuom',uomPref)}
 $('savecount').onclick=function(){
   var rows=PRODUCTS.filter(function(p){return p.warehouse===wh&&p.countable}).map(function(p){var v=draft[p.id]||{};return{product_id:p.id,name:p.name,group:p.group,on_hand:v.hand===undefined?'':v.hand,order:v.order===undefined?'':v.order,order_uom:cuom(p.id)}})
     .filter(function(r){return r.on_hand!==''||r.order!==''});
   if(!rows.length){toast('Enter at least one count first');return}
   var b=this;b.disabled=true;
-  api('saveCount',{counter:$('counter').value,warehouse:wh,rows:rows}).then(function(lc){lastByWh[wh]=lc;showLast();toast('Count saved ✓');refresh()}).catch(function(e){toast('Save failed: '+e.message)}).then(function(){b.disabled=false});
+  var sw=wh;api('saveCount',{counter:$('counter').value,warehouse:sw,rows:rows}).then(function(lc){lastByWh[sw]=lc;clearWh(sw);if(wh===sw){renderGroups();renderGuide()}showLast();toast('Count saved ✓ - cleared for a new count');refresh()}).catch(function(e){toast('Save failed: '+e.message)}).then(function(){b.disabled=false});
 };
 
 // ---------- new order ----------
@@ -152,7 +154,7 @@ $('saveorder').onclick=function(){
   var b=this;b.disabled=true;
   api('createOrder',{created_by:$('counter').value,source_warehouse:srcwh(),destination:dest,ship_to:$('shipto').value.trim(),drop_spot:$('drop').value.trim(),delivery_date:$('ddate').value,
      slip_no:$('slipno').value.trim(),slip_date:$('slipdate').value,ship_via:$('shipvia').value.trim(),po_no:$('pono').value.trim(),tax_no:$('taxno').value.trim(),permit_no:$('permitno').value.trim(),items:items,note:$('onote').value.trim()})
-   .then(function(){lines=[];renderLines();['onote','search','slipno','slipdate','pono','taxno','permitno','shipto','drop'].forEach(function(k){$(k).value=''});$('results').innerHTML='';$('dest').value='';$('destother').hidden=true;$('destalert').hidden=true;toast('Order saved ✓');return refresh()})
+   .then(function(){lines=[];renderLines();['onote','search','slipno','slipdate','pono','taxno','permitno','shipto','drop'].forEach(function(k){$(k).value=''});$('results').innerHTML='';$('dest').value='';$('destother').value='';$('destother').hidden=true;$('ddate').value='';$('shipvia').value=C.SHIP_VIA_DEFAULT||'';$('destalert').hidden=true;toast('Order saved ✓');return refresh()})
    .catch(function(e){toast('Save failed: '+e.message)}).then(function(){b.disabled=false});
 };
 
