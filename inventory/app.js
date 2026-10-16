@@ -106,16 +106,14 @@ function renderGuide(){
   $('guide').innerHTML=html||'<p class="muted">Nothing to order yet. Use the Order field on any item.</p>';
 }
 function allNames(){var ns=(C.COUNTER_NAMES||['Mac']).slice();LS.get('names',[]).forEach(function(n){if(ns.indexOf(n)<0)ns.push(n)});return ns}
-$('cbtns').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;LS.set('counter',b.dataset.n);renderCounters()});
 function renderCounters(){var names=allNames(),cur=LS.get('counter',names[0]);if(names.indexOf(cur)<0)cur=names[0];
-  $('cbtns').innerHTML=names.map(function(n){return '<button type="button" data-n="'+esc(n)+'" class="'+(n===cur?'on':'')+'">'+esc(n)+'</button>'}).join('');
-  $('counter').innerHTML=names.map(function(n){return '<option'+(n===cur?' selected':'')+'>'+esc(n)+'</option>'}).join('')}
-$('counter').onchange=function(){LS.set('counter',this.value)};
+  var opts=names.map(function(n){return '<option'+(n===cur?' selected':'')+'>'+esc(n)+'</option>'}).join('');$('counter').innerHTML=opts;$('ocounter').innerHTML=opts}
+$('counter').onchange=$('ocounter').onchange=function(){LS.set('counter',this.value);renderCounters()};
 $('addname').onclick=function(){var n=(prompt('Counter name')||'').trim();if(!n)return;var ns=LS.get('names',[]);if(ns.indexOf(n)<0)ns.push(n);LS.set('names',ns);LS.set('counter',n);renderCounters()};
 function whName(w){var x=WH.filter(function(a){return a.id===w})[0];return x?x.name:w}
 function showLast(){var lc=lastByWh[wh];$('lastsaved').textContent=lc?whName(wh)+' last saved '+fmt(lc.timestamp)+' by '+lc.counter:whName(wh)+': not saved yet'}
-function renderWh(){if(!WH.some(function(x){return x.id===wh}))wh='W1';$('whsw').innerHTML=WH.map(function(x){return '<button type="button" data-w="'+x.id+'">'+esc(x.name)+'</button>'}).join('');$('whsw').querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.w===wh)});var x=WH.filter(function(a){return a.id===wh})[0];$('whsrc').textContent=x?x.source:'';renderGroups();renderGuide();showLast()}
-$('whsw').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;wh=b.dataset.w;LS.set('wh',wh);renderWh()});
+function renderWh(){if(!WH.some(function(x){return x.id===wh}))wh='W1';var wo=WH.map(function(x){return '<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>'}).join(''),sv=$('srcwh').value;$('whsw').innerHTML=wo;$('whsw').value=wh;if(!$('srcwh').options.length){$('srcwh').innerHTML=wo;$('srcwh').value=WH.some(function(x){return x.id===sv})?sv:'W1'}var x=WH.filter(function(a){return a.id===wh})[0];$('whsrc').textContent=x?x.source:'';renderGroups();renderGuide();showLast()}
+$('whsw').onchange=function(){wh=this.value;LS.set('wh',wh);renderWh()};
 // ---------- Text Order (sms: link + copy; never auto-sends) ----------
 function today(){return new Date().toLocaleDateString([],{month:'numeric',day:'numeric',year:'numeric'})}
 function smsBody(o){var L=['Fiesta order - '+o.loc,'Date: '+o.date];if(o.to)L.push('To: '+o.to);if(o.counter)L.push('By: '+o.counter);if(o.id)L.push('Order #: '+o.id);L.push('');
@@ -159,9 +157,9 @@ $('saveorder').onclick=function(){
   var dv=$('dest').value,dest=dv==='__other'?$('destother').value.trim():(CUST[dv]||{}).name;
   if(!dest){toast('Pick the customer');return}if(!$('ddate').value){toast('Pick a delivery date');return}if(!lines.length){toast('Add at least one product');return}
   var items=lines.map(function(l){var p=BYID[l.id];return{product_id:l.id,name:p.name,group:p.group,unit:p.unit||'',qty:l.qty,back_ordered:l.bo,shipped:Math.max(0,l.qty-l.bo),uom:unitOk(srcwh())?uomOf(l):'case'}});
-  var snap={loc:whName(srcwh()),to:dest,date:$('ddate').value,counter:$('counter').value,note:$('onote').value.trim(),lines:items.filter(function(i){return i.qty>0}).map(function(i){return{name:i.name,qty:i.qty,uom:i.uom}})};$('txto').hidden=true;
+  var snap={loc:whName(srcwh()),to:dest,date:$('ddate').value,counter:$('ocounter').value,note:$('onote').value.trim(),lines:items.filter(function(i){return i.qty>0}).map(function(i){return{name:i.name,qty:i.qty,uom:i.uom}})};$('txto').hidden=true;
   var b=this;b.disabled=true;
-  api('createOrder',{created_by:$('counter').value,source_warehouse:srcwh(),destination:dest,ship_to:$('shipto').value.trim(),drop_spot:$('drop').value.trim(),delivery_date:$('ddate').value,
+  api('createOrder',{created_by:$('ocounter').value,source_warehouse:srcwh(),destination:dest,ship_to:$('shipto').value.trim(),drop_spot:$('drop').value.trim(),delivery_date:$('ddate').value,
      slip_no:$('slipno').value.trim(),slip_date:$('slipdate').value,ship_via:$('shipvia').value.trim(),po_no:$('pono').value.trim(),tax_no:$('taxno').value.trim(),permit_no:$('permitno').value.trim(),items:items,note:$('onote').value.trim()})
    .then(function(r){snap.id=r&&(r.id||r.order_id)||'';showText('o',snap);lines=[];renderLines();['onote','search','slipno','slipdate','pono','taxno','permitno','shipto','drop'].forEach(function(k){$(k).value=''});$('results').innerHTML='';$('dest').value='';$('destother').value='';$('destother').hidden=true;$('ddate').value='';$('shipvia').value=C.SHIP_VIA_DEFAULT||'';$('destalert').hidden=true;toast('Order saved ✓');return refresh()})
    .catch(function(e){toast('Save failed: '+e.message)}).then(function(){b.disabled=false});
@@ -234,8 +232,14 @@ function renderBal(){var rin={},out={},opn={},unk=[],unconf={};
 
 // ---------- boot ----------
 $('demo').hidden=!DEMO;$('ddate').value=today();
-fetch('products.json?v=20261016c').then(function(r){return r.json()}).then(function(j){GROUPS=j.groups;PRODUCTS=j.products;WH=j.warehouses;SEEDS=j.seed_orders||[];EXPECTED=j.expected_receipts||[];PRODUCTS.forEach(function(p){BYID[p.id]=p});
+fetch('products.json?v=20261016e').then(function(r){return r.json()}).then(function(j){GROUPS=j.groups;PRODUCTS=j.products;WH=j.warehouses;SEEDS=j.seed_orders||[];EXPECTED=j.expected_receipts||[];PRODUCTS.forEach(function(p){BYID[p.id]=p});
   renderCounters();renderWh();renderDest();renderLines();
   if(!DEMO&&!LS.get('pin',''))askPin();else refresh();
 }).catch(function(e){toast('Could not load products: '+e.message)});
 })();
+
+// Header refresh: drop any service worker + caches, then reload with a cache-buster. PIN + drafts live in localStorage, so they survive.
+$('hardrefresh').onclick=function(){this.disabled=true;this.textContent='↻ Loading…';var go=function(){location.replace(location.pathname+'?r='+Date.now())},t=setTimeout(go,1500),ps=[];
+  try{if(navigator.serviceWorker&&navigator.serviceWorker.getRegistrations)ps.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister()}))}));
+    if(window.caches&&caches.keys)ps.push(caches.keys().then(function(ks){return Promise.all(ks.map(function(k){return caches.delete(k)}))}))}catch(e){}
+  Promise.all(ps).then(function(){clearTimeout(t);go()},function(){clearTimeout(t);go()})};
