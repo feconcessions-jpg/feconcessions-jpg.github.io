@@ -3,7 +3,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#00b4b6"><title>Fiesta Inventory</title>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" href="icon-192.png"><link rel="stylesheet" href="style.css?v=20261015b"></head><body>
+<link rel="icon" href="icon-192.png"><link rel="stylesheet" href="style.css?v=20261016c"></head><body>
 <header><img src="logo.png" alt="Fiesta" class="logo"><h1>Fiesta Inventory</h1></header>
 <div id="demo" class="banner" hidden>Demo mode: counts and orders are saved on this phone only until the app is connected to the Sheet</div>
 <div id="pinbox" class="card" hidden><label>Staff PIN<input id="pin" type="password" inputmode="numeric"></label><button class="btn teal" id="pinok">Enter</button></div>
@@ -18,7 +18,7 @@
   <button class="btn red big sticky" id="savecount">Save count</button>
 </section>
 <section id="tab-new" class="tab" hidden>
-  <div class="card"><label>From warehouse<select id="srcwh"><option value="W1">Warehouse 1</option><option value="W2">Warehouse 2</option><option value="TRL">Fiesta Trailer</option><option value="TRB">Trio Beverage</option></select></label>
+  <div class="card"><label>From warehouse<select id="srcwh"><option value="W1">Warehouse 1</option><option value="W2">Warehouse 2</option><option value="TRL">Fiesta Trailer</option><option value="TRB">Trio Beverage</option><option value="GR1">Granny's (C-7F)</option><option value="GR2">Granny's 2 (G-48F)</option><option value="TRS">Trio Strap</option><option value="FL">Footlong (G-47F)</option></select></label>
   <label>Customer / stand<select id="dest"></select></label>
   <input id="destother" placeholder="Type customer or stand" hidden>
   <div id="destalert" class="alert" hidden></div>
@@ -67,4 +67,4 @@
 <div class="row"><button class="btn small" id="sigclear">Clear</button><button class="btn small" id="shcancel">Cancel</button><button class="btn green" id="shsave" style="flex:1">Save delivered</button></div></div></div>
 <div id="toast" hidden></div>
 <nav><button data-tab="count" class="on">Count</button><button data-tab="new">New order</button><button data-tab="orders">Orders</button><button data-tab="recv">Receive</button></nav>
-<script src="config.js"></script><script src="app.js?v=20261015b"></script></body></html>
+<script src="config.js"></script><script src="app.js?v=20261016c"></script></body></html>
