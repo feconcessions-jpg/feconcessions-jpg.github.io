@@ -140,7 +140,7 @@ function renderDest(){$('dest').innerHTML='<option value="">Choose…</option>'+
 $('dest').onchange=function(){var v=this.value,c=CUST[v];$('destother').hidden=v!=='__other';$('shipto').value=c?c.ship_to:'';$('drop').value=c?c.drop:'';
   var al=c&&c.alert?'⚠ '+c.alert:(c&&c.w1&&srcwh()==='W1'?'⚠ Warehouse 1 as destination is a transfer: set From warehouse to Warehouse 2':'');$('destalert').hidden=!al;$('destalert').textContent=al};
 function srcwh(){return $('srcwh').value}
-function unitOk(w){return w==='W1'||w==='TRL'||w==='TRB'}  // W2 = Specialty Blends' warehouse: cases only
+function unitOk(w){return w!=='W2'}  // W2 = Specialty Blends' warehouse: cases only
 $('srcwh').onchange=function(){if(!unitOk(srcwh()))lines.forEach(function(l){l.uom='case'});lines=[];renderLines();$('search').dispatchEvent(new Event('input'))};
 $('search').addEventListener('input',function(){var q=this.value.trim().toLowerCase();
   if(!q){$('results').innerHTML='';return}
@@ -234,7 +234,7 @@ function renderBal(){var rin={},out={},opn={},unk=[],unconf={};
 
 // ---------- boot ----------
 $('demo').hidden=!DEMO;$('ddate').value=today();
-fetch('products.json?v=20261014d').then(function(r){return r.json()}).then(function(j){GROUPS=j.groups;PRODUCTS=j.products;WH=j.warehouses;SEEDS=j.seed_orders||[];EXPECTED=j.expected_receipts||[];PRODUCTS.forEach(function(p){BYID[p.id]=p});
+fetch('products.json?v=20261016c').then(function(r){return r.json()}).then(function(j){GROUPS=j.groups;PRODUCTS=j.products;WH=j.warehouses;SEEDS=j.seed_orders||[];EXPECTED=j.expected_receipts||[];PRODUCTS.forEach(function(p){BYID[p.id]=p});
   renderCounters();renderWh();renderDest();renderLines();
   if(!DEMO&&!LS.get('pin',''))askPin();else refresh();
 }).catch(function(e){toast('Could not load products: '+e.message)});
