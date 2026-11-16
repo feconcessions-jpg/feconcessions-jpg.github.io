@@ -69,8 +69,15 @@ function pnl(unit,days){
   const sharedApplied=unit=='ALL'?sharedAmt:(S.alloc?sharedAmt*share:0);
   const set=new Set(days); const lab=S.year==2026?(D.labor||[]).filter(l=>(S.p=='year'||set.has(l.fd))&&(unit=='ALL'||l.unit==unit)):[];
   const labor=sum(lab,'cost'); const cats={}; direct.forEach(e=>{cats[e.category]=(cats[e.category]||0)+e.amount;});
-  const profit=net-sum(direct,'amount')-sharedApplied-labor;
-  return{sl,gross,comm,net,direct,cats,shared,sharedAmt,share,sharedApplied,labor,lab,profit,margin:net?profit/net:null,
+  // Adjustments: sales tax counts only when PAID, other income only when RECEIVED. Full-year ALL view only.
+  const adjOn=S.year==2026&&S.p=='year'&&unit=='ALL', adj=adjOn?(D.adjustments||[]):[];
+  const up=x=>String(x||'').toUpperCase().trim(), amt=a=>+a.amount||0;
+  const taxPaidL=adj.filter(a=>up(a.type)=='SALES_TAX'&&up(a.status)=='PAID'), taxPendL=adj.filter(a=>up(a.type)=='SALES_TAX'&&up(a.status)!='PAID');
+  const incRecL=adj.filter(a=>up(a.type)=='OTHER_INCOME'&&up(a.status)=='RECEIVED'), incPendL=adj.filter(a=>up(a.type)=='OTHER_INCOME'&&up(a.status)!='RECEIVED');
+  const taxPaid=taxPaidL.reduce((t,a)=>t+amt(a),0), taxPend=taxPendL.reduce((t,a)=>t+amt(a),0);
+  const incRec=incRecL.reduce((t,a)=>t+amt(a),0), incPend=incPendL.reduce((t,a)=>t+amt(a),0);
+  const profit=net-sum(direct,'amount')-sharedApplied-labor-taxPaid+incRec;
+  return{sl,gross,comm,net,direct,cats,shared,sharedAmt,share,sharedApplied,labor,lab,profit,adjOn,taxPaid,taxPend,incRec,incPend,taxPaidL,taxPendL,incRecL,incPendL,margin:net?profit/net:null,
     hasCosts:S.year==2026,datesInData:[...new Set(sl.map(s=>s.fair_day))]};
 }
 function render(){
@@ -112,12 +119,18 @@ function renderPnl(P,days){
   else if(S.alloc) h+=r(`Shared costs allocated (${(P.share*100).toFixed(1)}% of net) <span class="tag">PROPOSAL</span>`,-P.sharedApplied,'tap','data-cat="__shared"');
   else h+=`<tr class="sub tap" data-cat="__shared"><td>Shared costs not allocated (${money(P.sharedAmt)} total, all units) - turn on the toggle to see a proposed share</td><td></td><td></td></tr>`;
   h+=P.labor?r('Labor',-P.labor,'tap','data-cat="__labor"'):'<tr><td>Labor</td><td class="pend">pending payroll</td><td></td></tr>';
+  if(P.taxPaid)h+=r('Sales tax paid',-P.taxPaid,'tap','data-cat="__taxpaid"');
+  if(P.incRec)h+=r('Other income received',P.incRec,'tap','data-cat="__increc"');
   h+=r('Profit'+(S.unit!='ALL'&&!S.alloc?' before shared costs':'')+(P.labor?'':' (before labor)'),P.profit,'tot');
   h+=(hasSq()?'<tr class="tap" data-cat="__square"><td>Square item detail (Days 1-11 only, for drill-down - not the sales total) ›</td><td></td><td></td></tr>':'<tr class="sub"><td>Square item detail: not available online</td><td></td><td></td></tr>')+'</table>';
+  if(P.adjOn&&(P.taxPend||P.incPend))h+='<p class="muted tap" id="adjpend">Info only, not in profit: '+(P.taxPend?'Sales tax owed (not yet paid) <b>'+money(P.taxPend)+'</b>':'')+(P.taxPend&&P.incPend?' · ':'')+(P.incPend?'Other income pending (not yet received) <b>'+money(P.incPend)+'</b>':'')+' ›</p>';
   if(S.p!='year')h+='<p class="muted">Period view: only invoices dated inside these fair days are counted. Pre-fair purchases show in the Year view.</p>';
   $('#pnl').innerHTML=h;
+  const adjT=(t,l)=>sheet('<h2>'+t+'</h2>'+table(['Label','Ref','Status','Paid/received','Amount'],l.map(a=>[esc(a.label),esc(a.ref),esc(a.status),esc(a.paid_date||''),money(+a.amount||0)])));
+  const ap=$('#adjpend'); if(ap)ap.onclick=()=>adjT('Pending (info only, not in profit)',[...P.taxPendL,...P.incPendL]);
   $('#pnl').querySelectorAll('tr.tap').forEach(tr=>tr.onclick=()=>{const c=tr.dataset.cat;
     if(c=='__square')return showSquare(days,S.unit);
+    if(c=='__taxpaid')return adjT('Sales tax paid',P.taxPaidL); if(c=='__increc')return adjT('Other income received',P.incRecL);
     if(c=='__labor')return sheet('<h2>Labor</h2>'+table(['Date','Unit','Hours','Cost'],P.lab.map(l=>[l.date,l.unit,l.hours,money(l.cost)])));
     const list=c=='__shared'?P.shared:P.direct.filter(e=>e.category==c);
     showInvoices((c=='__shared'?'Shared / unallocated':c)+(S.unit=='ALL'?'':' - '+(c=='__shared'?'all units':D.uname[S.unit])),list);});
